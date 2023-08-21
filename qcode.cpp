@@ -19,12 +19,12 @@ qcode::qcode(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-//    resize(1200, 800);
+    resize(1200, 800);
 
     titleBar *pTitleBar = new titleBar(this);
     installEventFilter(pTitleBar);
 
-    setWindowTitle("Custom Window");
+//    setWindowTitle("Custom Window");
     QIcon w_icon(":/images/qc.png");
     setWindowIcon(w_icon);
 
@@ -36,7 +36,7 @@ qcode::qcode(QWidget *parent)
 
     setLayout(pLayout);
 
-    m_nBorderWidth = 5;
+    m_nBorderWidth = 8;
 }
 
 qcode::~qcode()
@@ -46,6 +46,7 @@ qcode::~qcode()
 
 
 
+// 拖动窗口边缘，实现缩放
 bool qcode::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
 {
     Q_UNUSED(eventType)
@@ -60,7 +61,7 @@ bool qcode::nativeEvent(const QByteArray &eventType, void *message, qintptr *res
         int nY = GET_Y_LPARAM(param->lParam) - this->geometry().y();
 
         // 如果鼠标位于子控件上，则不进行处理
-        if (childAt(nX, nY) != nullptr)
+        if (childAt(nX, nY) != nullptr)              // 设置这个会导致 titlebar 无效
             return QWidget::nativeEvent(eventType, message, result);
 
         *result = HTCAPTION;

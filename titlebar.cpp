@@ -4,6 +4,7 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QApplication>
+#include <QPixmap>
 #include "titleBar.h"
 
 //调用WIN API需要用到的头文件与库
@@ -12,18 +13,92 @@
 #include <qt_windows.h>
 #endif
 
-#include <QPixmap>
 
 
 titleBar::titleBar(QWidget *parent)
     : QWidget(parent)
 {
-    setFixedHeight(30);
+    setFixedHeight(23);  // 高度设定固定大小
 
-
-    //给成员变量申请内存
     m_pIconLabel = new QLabel(this);
     m_pTitleLabel = new QLabel(this);
+
+    m_menu = new QMenuBar(this);   // 菜单栏
+
+    m_file = new QAction("File", this);
+    // 创建专属菜单
+    QMenu *file_menu = new QMenu(this);
+    // 设置专属菜单
+    m_file->setMenu(file_menu);
+    // 新建 第一部分 QAction
+    new_text_file = new QAction("New Text File", this);
+    new_file = new QAction("New File...", this);
+    new_window = new QAction("New Window", this);
+    // 添加 第一部分 QAction
+    file_menu->addAction(new_text_file);
+    file_menu->addAction(new_file);
+    file_menu->addAction(new_window);
+
+    // 添加分割符
+    file_menu->addSeparator();
+
+    // 新建 第二部分 QAction
+    open_file = new QAction("Open File...", this);
+    open_folder = new QAction("Open folder...", this);
+    open_recent = new QAction("Open Recent", this);   // 这个还得再设置一个 QMenu
+    // 添加 第二部分功能 QAction
+    file_menu->addAction(open_file);
+    file_menu->addAction(open_folder);
+    file_menu->addAction(open_recent);
+
+    // 添加分隔符
+    file_menu->addSeparator();
+
+    // 新建 第三部分 QAction
+    save = new QAction("Save", this);
+    save_as = new QAction("Save As...", this);
+    // 添加 第三部分 QAction
+    file_menu->addAction(save);
+    file_menu->addAction(save_as);
+
+    // 添加分隔符
+    file_menu->addSeparator();
+
+    // 新建 第四部分 QAction
+    close_editor = new QAction("Close Editor", this);
+    close_window = new QAction("Close Window", this);
+    // 添加 第四部分功能 QAction
+    file_menu->addAction(close_editor);
+    file_menu->addAction(close_window);
+
+
+    m_edit = new QAction("Edit", this);
+    QMenu *edit_menu = new QMenu(this);
+    m_edit->setMenu(edit_menu);
+    undo = new QAction("Uodo", this);
+    redo = new QAction("Redo", this);
+    edit_menu->addAction(undo);
+    edit_menu->addAction(redo);
+    edit_menu->addSeparator();
+    cut = new QAction("Cut", this);
+    copy = new QAction("Copy", this);
+    paste = new QAction("Paste", this);
+    edit_menu->addAction(cut);
+    edit_menu->addAction(copy);
+    edit_menu->addAction(paste);
+    edit_menu->addSeparator();
+    find = new QAction("Find", this);
+    replace = new QAction("Replace", this);
+    edit_menu->addAction(find);
+    edit_menu->addAction(replace);
+
+
+
+
+    m_selection = new QAction("Selection", this);
+    m_view = new QAction("View", this);
+    m_help = new QAction("Help", this);
+
     m_pMinimizeButton = new QPushButton(this);
     m_pMaximizeButton = new QPushButton(this);
     m_pCloseButton = new QPushButton(this);
@@ -34,17 +109,33 @@ titleBar::titleBar(QWidget *parent)
     QPixmap pixmap(":/images/qc.png");
     m_pIconLabel->setPixmap(pixmap);
 
+    // 设置文本
     m_pTitleLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    // 设置菜单栏部件的名称
+    m_file->setObjectName("File");
+    m_edit->setObjectName("Edit");
+    m_selection->setObjectName("Selection");
+    m_view->setObjectName("View");
+    m_help->setObjectName("Help");
+
+    // 为菜单栏添加 QAction 控件
+    m_menu->addAction(m_file);
+    m_menu->addAction(m_edit);
+    m_menu->addAction(m_selection);
+    m_menu->addAction(m_view);
+    m_menu->addAction(m_help);
+
 
     //设置按钮的固定大小、图片、取消边框
     m_pMinimizeButton->setIconSize(QSize(30,22));
     m_pMinimizeButton->setIcon(QIcon(":/images/minimize.png"));
     m_pMinimizeButton->setFlat(true);
-    //--
+
     m_pMaximizeButton->setIconSize(QSize(27,22));
     m_pMaximizeButton->setIcon(QIcon(":/images/maximize.png"));
     m_pMaximizeButton->setFlat(true);
-    //--
+
     m_pCloseButton->setIconSize(QSize(27,22));
     m_pCloseButton->setIcon(QIcon(":/images/close.png"));
     m_pCloseButton->setFlat(true);
@@ -61,20 +152,28 @@ titleBar::titleBar(QWidget *parent)
     m_pMaximizeButton->setToolTip("Maximize");
     m_pCloseButton->setToolTip("Close");
 
+
+//    m_menu->setFixedHeight(30);
+    m_menu->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
     //标题栏布局
     QHBoxLayout *pLayout = new QHBoxLayout(this);
     pLayout->addWidget(m_pIconLabel);
-    pLayout->addSpacing(5);             // 宽度
-    pLayout->addWidget(m_pTitleLabel);
+    pLayout->setSpacing(5);             // 间隙
+//    pLayout->addWidget(m_pTitleLabel);
 
-//    pLayout->addStretch(1);             // 增加一个弹簧
+    pLayout->setSpacing(5);             // 间隙
+
+    pLayout->addWidget(m_menu);         // 添加菜单栏
+
+
+    pLayout->addStretch(1);             // 增加一个弹簧
 
     pLayout->addWidget(m_pMinimizeButton);
     pLayout->addWidget(m_pMaximizeButton);
     pLayout->addWidget(m_pCloseButton);
     pLayout->setSpacing(0);
     pLayout->setContentsMargins(5, 0, 5, 0);
-    pLayout->setContentsMargins(0, 0, 0, 0);
 
     this->setLayout(pLayout);
 
@@ -91,6 +190,9 @@ titleBar::~titleBar()
 {
 
 }
+
+
+// BUG 在最大化时，点击最小化，再点击恢复按钮，再点击最大化按钮时出现无响应，显示 resotre, 点击 2 次恢复
 
 //双击标题栏进行界面的最大化/还原
 void titleBar::mouseDoubleClickEvent(QMouseEvent *event)
