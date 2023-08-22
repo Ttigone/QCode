@@ -1,5 +1,6 @@
 #include "qcode.h"
 #include "./ui_qcode.h"
+#include "qtextedit.h"
 #include "titleBar.h"
 
 
@@ -10,6 +11,8 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #include <Windowsx.h>
+#include <QFileDialog>
+#include <QMessageBox>
 #endif
 
 
@@ -22,21 +25,31 @@ qcode::qcode(QWidget *parent)
     resize(1200, 800);
 
     titleBar *pTitleBar = new titleBar(this);
+//    pTitleBar->setFixedHeight(23);
     installEventFilter(pTitleBar);
 
 //    setWindowTitle("Custom Window");
     QIcon w_icon(":/images/qc.png");
     setWindowIcon(w_icon);
 
-    QVBoxLayout *pLayout = new QVBoxLayout();
+    QVBoxLayout *pLayout = new QVBoxLayout(this);
     pLayout->addWidget(pTitleBar);
-    pLayout->addStretch();
-    pLayout->setSpacing(0);
-    pLayout->setContentsMargins(0, 0, 0, 0);
+//    pLayout->addStretch();
+    pLayout->setSpacing(5);  // 与下一部件的间距
+    pLayout->setContentsMargins(5, 0, 5, 5);  // left top right bottom 边缘间距像素
+
+    text = new QTextEdit(this);
+    text->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    pLayout->addWidget(text);
+    text->setStyleSheet("border: 2px solid red;");
+
+    // 将菜单栏的 新建文本文件信号关联到匹配的槽函数
+    connect(pTitleBar, &titleBar::new_text_file_triggered, this, &qcode::_new_text_file_triggered);
+    connect(pTitleBar, &titleBar::open_file_triggered, this, &qcode::_open_file_triggered);
+    connect(pTitleBar, &titleBar::save_triggered, this, &qcode::_save_triggered);
 
     setLayout(pLayout);
-
-    m_nBorderWidth = 8;
+    m_nBorderWidth = 3;
 }
 
 qcode::~qcode()
@@ -100,5 +113,47 @@ bool qcode::nativeEvent(const QByteArray &eventType, void *message, qintptr *res
     }
 
     return QWidget::nativeEvent(eventType, message, result);
+}
+
+void qcode::_new_text_file_triggered()
+{
+    qDebug() << "create new file";
+    current_file.clear();
+    text->setText("");
+}
+
+void qcode::_open_file_triggered()
+{
+    file_name = QFileDialog::getOpenFileName(this, "打开文件");
+    QFile file(file_name);
+    if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, "警告", "无法打开此文件: " + file.errorString());
+        return;
+    }
+    current_file = file_name;
+    QTextStream in(&file);
+    QString content_text = in.readAll();
+    text->setText(content_text);
+    file.close();
+}
+
+void qcode::_save_triggered()
+{
+    if (current_file.isEmpty()) {
+        file_name = QFileDialog::getSaveFileName(this, "保存文件");
+        current_file = file_name;
+    } else {
+        file_name = current_file;
+    }
+    QFile file(file_name);
+    if (!file.open(QIODevice::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, "警告", "无法保存文件: " + file.errorString());
+        return;
+    }
+    QTextStream out(&file);
+    QString content_text = text->toHtml();
+
+    out << content_text;
+    file.close();
 }
 

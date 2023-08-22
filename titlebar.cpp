@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QApplication>
 #include <QPixmap>
+
 #include "titleBar.h"
 
 //调用WIN API需要用到的头文件与库
@@ -31,73 +32,93 @@ titleBar::titleBar(QWidget *parent)
     // 设置专属菜单
     m_file->setMenu(file_menu);
     // 新建 第一部分 QAction
-    new_text_file = new QAction("New Text File", this);
-    new_file = new QAction("New File...", this);
-    new_window = new QAction("New Window", this);
+    m_new_text_file = new QAction("New Text File", this);
+    m_new_file = new QAction("New File...", this);
+    m_new_window = new QAction("New Window", this);
     // 添加 第一部分 QAction
-    file_menu->addAction(new_text_file);
-    file_menu->addAction(new_file);
-    file_menu->addAction(new_window);
+    file_menu->addAction(m_new_text_file);
+    file_menu->addAction(m_new_file);
+    file_menu->addAction(m_new_window);
 
     // 添加分割符
     file_menu->addSeparator();
 
+
+
     // 新建 第二部分 QAction
-    open_file = new QAction("Open File...", this);
-    open_folder = new QAction("Open folder...", this);
-    open_recent = new QAction("Open Recent", this);   // 这个还得再设置一个 QMenu
+    m_open_file = new QAction("Open File...", this);
+    m_open_folder = new QAction("Open folder...", this);
+    m_open_recent = new QAction("Open Recent", this);   // 这个还得再设置一个 QMenu
     // 添加 第二部分功能 QAction
-    file_menu->addAction(open_file);
-    file_menu->addAction(open_folder);
-    file_menu->addAction(open_recent);
+    file_menu->addAction(m_open_file);
+    file_menu->addAction(m_open_folder);
+    file_menu->addAction(m_open_recent);
 
     // 添加分隔符
     file_menu->addSeparator();
 
     // 新建 第三部分 QAction
-    save = new QAction("Save", this);
-    save_as = new QAction("Save As...", this);
+    m_save = new QAction("Save", this);
+    m_save_as = new QAction("Save As...", this);
     // 添加 第三部分 QAction
-    file_menu->addAction(save);
-    file_menu->addAction(save_as);
+    file_menu->addAction(m_save);
+    file_menu->addAction(m_save_as);
 
     // 添加分隔符
     file_menu->addSeparator();
 
     // 新建 第四部分 QAction
-    close_editor = new QAction("Close Editor", this);
-    close_window = new QAction("Close Window", this);
+    m_close_editor = new QAction("Close Editor", this);
+    m_close_window = new QAction("Close Window", this);
     // 添加 第四部分功能 QAction
-    file_menu->addAction(close_editor);
-    file_menu->addAction(close_window);
-
+    file_menu->addAction(m_close_editor);
+    file_menu->addAction(m_close_window);
 
     m_edit = new QAction("Edit", this);
     QMenu *edit_menu = new QMenu(this);
     m_edit->setMenu(edit_menu);
-    undo = new QAction("Uodo", this);
-    redo = new QAction("Redo", this);
-    edit_menu->addAction(undo);
-    edit_menu->addAction(redo);
+    m_undo = new QAction("Uodo", this);
+    m_redo = new QAction("Redo", this);
+    edit_menu->addAction(m_undo);
+    edit_menu->addAction(m_redo);
     edit_menu->addSeparator();
-    cut = new QAction("Cut", this);
-    copy = new QAction("Copy", this);
-    paste = new QAction("Paste", this);
-    edit_menu->addAction(cut);
-    edit_menu->addAction(copy);
-    edit_menu->addAction(paste);
+    m_cut = new QAction("Cut", this);
+    m_copy = new QAction("Copy", this);
+    m_paste = new QAction("Paste", this);
+    edit_menu->addAction(m_cut);
+    edit_menu->addAction(m_copy);
+    edit_menu->addAction(m_paste);
     edit_menu->addSeparator();
-    find = new QAction("Find", this);
-    replace = new QAction("Replace", this);
-    edit_menu->addAction(find);
-    edit_menu->addAction(replace);
+    m_find = new QAction("Find", this);
+    m_replace = new QAction("Replace", this);
+    edit_menu->addAction(m_find);
+    edit_menu->addAction(m_replace);
 
 
 
 
     m_selection = new QAction("Selection", this);
+    QMenu *selection_menu = new QMenu(this);
+    m_selection->setMenu(selection_menu);
+    m_select_all = new QAction("Select All");
+    selection_menu->addAction(m_select_all);
+
     m_view = new QAction("View", this);
+    QMenu *view_menu = new QMenu(this);
+    m_view->setMenu(view_menu);
+    m_command_palette = new QAction("Command Palette...", this);
+    view_menu->addAction(m_command_palette);
+
     m_help = new QAction("Help", this);
+    QMenu *help_menu = new QMenu(this);
+    m_help->setMenu(help_menu);
+    m_welcome = new QAction("Welcome", this);
+    m_show_all_commands = new QAction("Show All Commands", this);
+    help_menu->addAction(m_welcome);
+    help_menu->addAction(m_show_all_commands);
+    help_menu->addSeparator();
+    m_about = new QAction("About", this);
+    help_menu->addAction(m_about);
 
     m_pMinimizeButton = new QPushButton(this);
     m_pMaximizeButton = new QPushButton(this);
@@ -166,6 +187,7 @@ titleBar::titleBar(QWidget *parent)
 
     pLayout->addWidget(m_menu);         // 添加菜单栏
 
+//    pLayout->setSpacing(5);             // 间隙
 
     pLayout->addStretch(1);             // 增加一个弹簧
 
@@ -183,6 +205,32 @@ titleBar::titleBar(QWidget *parent)
     connect(m_pMaximizeButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(m_pCloseButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
 
+    m_hover_timer = new QTimer(this);
+
+//    connect(m_menu, &QMenuBar::hovered, this, &titleBar::onMenuHovered);   // 移动到 menubar 的时候按一定事件显示对应的 QMenu
+
+    connect(m_hover_timer, &QTimer::timeout, this, &titleBar::showMenu);
+    m_hover_timer->setSingleShot(true);
+
+
+    // BUG 连续点击时会导致程序崩溃  // 正常也会
+    connect(file_menu, &QMenu::aboutToShow, m_hover_timer, &QTimer::stop);  // 解决问题？
+    connect(edit_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
+    connect(selection_menu, &QMenu::aboutToShow, m_hover_timer, &QTimer::stop);
+    connect(view_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
+    connect(help_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
+
+    // 绑定快捷键
+    m_save->setShortcut(QKeySequence(tr("Ctrl+s")));
+    connect(m_save, &QAction::triggered, this, [&](){
+        qDebug() << "sa";
+        m_hover_timer->stop();
+    });
+
+
+    connect(m_new_text_file, &QAction::triggered, this, &titleBar::new_text_file_triggered);
+    connect(m_open_file, &QAction::triggered, this, &titleBar::open_file_triggered);
+    connect(m_save, &QAction::triggered, this, &titleBar::save_triggered);
 
 }
 
@@ -285,6 +333,20 @@ void titleBar::onClicked()
         }
     }
 }
+
+void titleBar::onMenuHovered(QAction *action)
+{
+    m_current_hovered_action = action;
+    m_hover_timer->start(500);               // 延迟 500 毫秒
+}
+
+void titleBar::showMenu()
+{
+    if (m_current_hovered_action && !m_hover_timer->isActive()) {
+        m_current_hovered_action->menu()->popup(QCursor::pos());
+    }
+}
+
 
 
 //最大化/还原
