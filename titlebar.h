@@ -39,11 +39,65 @@ private slots:
 
 signals:
 
+
+
     void new_text_file_triggered();
+
+    void new_file_triggered();
+
+    void new_window_triggered();
 
     void open_file_triggered();
 
+    void open_folder_triggered();
+
+    void open_recent_triggered();
+
     void save_triggered();
+
+    void save_as_triggered();
+
+    void close_editor_triggered();
+
+    void close_window_triggered();
+
+
+
+    void undo_triggered();
+
+    void redo_triggered();
+
+    void cut_triggered();
+
+    void copy_triggered();
+
+    void paste_triggered();
+
+    void find_triggered();
+
+    void replace_triggered();
+
+
+
+
+    void select_all_triggered();
+
+
+
+
+    void command_palette_triggered();
+
+
+
+
+    void welcome_triggered();
+
+    void show_all_commands_triggered();
+
+    void about_triggered();
+
+    // 次级按钮的触发信号
+
 
 private:
 
@@ -69,6 +123,7 @@ private:
     QAction *m_open_file;
     QAction *m_open_folder;
     QAction *m_open_recent;
+
     QAction *m_save;
     QAction *m_save_as;
     QAction *m_close_editor;
@@ -95,6 +150,19 @@ private:
     QAction *m_welcome;
     QAction *m_show_all_commands;
     QAction *m_about;
+
+
+private:
+
+    // 顶层级的 QMenu
+    QMenu *m_file_menu;
+    QMenu *m_edit_menu;
+    QMenu *m_selection_menu;
+    QMenu *m_view_menu;
+    QMenu *m_help_menu;
+
+    // 次层级的 QMenu;
+    QMenu *m_open_recent_menu;
 
 private:
 
