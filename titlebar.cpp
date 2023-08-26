@@ -21,6 +21,8 @@ titleBar::titleBar(QWidget *parent)
 {
     setFixedHeight(23);  // 高度设定固定大小
 
+    setAttribute(Qt::WA_StyledBackground);
+
     m_pIconLabel = new QLabel(this);
     m_pTitleLabel = new QLabel(this);
 

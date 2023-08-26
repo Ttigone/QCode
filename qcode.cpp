@@ -3,6 +3,7 @@
 #include "qtextedit.h"
 #include "titleBar.h"
 #include "QSettings"
+#include "textedit.h"
 
 #include <qboxlayout.h>
 #include <QFileDialog>
@@ -28,6 +29,10 @@ qcode::qcode(QWidget *parent)
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     resize(1200, 800);
 
+//    setAttribute(Qt::WA_StyledBackground);
+//    setStyleSheet("background-color: rgb(17, 17, 17);");  // 整个窗口的颜色都改变了
+
+
     if (mSettings == nullptr) {
         mSettings = new QSettings("setting.ini", QSettings::IniFormat);
     }
@@ -49,9 +54,9 @@ qcode::qcode(QWidget *parent)
     pLayout->setSpacing(5);  // 与下一部件的间距
     pLayout->setContentsMargins(5, 0, 5, 5);  // left top right bottom 边缘间距像素
 
-    current_text_editor = new QTextEdit(this);
+    current_text_editor = new QTextEdit();
     current_text_editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    pLayout->addWidget(current_text_editor);
+    pLayout->addWidget(ui->tabWidget);
     current_text_editor->setStyleSheet("border: 2px solid red;");
 
     // 将菜单栏的 新建文本文件信号关联到匹配的槽函数
@@ -253,10 +258,12 @@ void qcode::init_recent_menu()
 
 void qcode::_new_text_file_triggered()
 {
-    qDebug() << "create new file";
-    current_file.clear();
-    current_text_editor->setText("");
-    init_recent_menu();
+    TextEdit *my_text_edit = new TextEdit(this);
+    ui->tabWidget->addTab(my_text_edit, "Untitled.txt");
+//    current_file.clear();
+//    current_text_editor->setText("");
+//    init_recent_menu();
+//    current_file = "Untitled.txt";
 }
 
 void qcode::_new_file_triggered()
@@ -301,7 +308,7 @@ void qcode::_open_recent_triggered()
 void qcode::_save_triggered()
 {
     if (current_file.isEmpty()) {
-        file_name = QFileDialog::getSaveFileName(this, "保存文件");
+        file_name = QFileDialog::getSaveFileName(this, "保存文件");  // 调用对话框的时候有一些 bug, 保存不能预先自己定义
         current_file = file_name;
     } else {
         file_name = current_file;
