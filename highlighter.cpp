@@ -2,8 +2,10 @@
 
 #include <QFile>
 
-Highlighter::Highlighter(QTextDocument *parent) : QSyntaxHighlighter(parent)
+Highlighter::Highlighter(QTextDocument *parent, QString font_family, int font_size) : QSyntaxHighlighter(parent)
 {
+    m_font_family = font_family;
+    m_font_size = font_size;
     // 普通文本
     add_normal_text_rule();
     // 数字
@@ -14,6 +16,10 @@ Highlighter::Highlighter(QTextDocument *parent) : QSyntaxHighlighter(parent)
     add_comment_rule();
     // 关键字
     add_keyword_rule();
+    // 类名
+    add_classname_rule();
+    // 函数名
+    add_funtion_rule();
 }
 
 void Highlighter::highlightBlock(const QString &text)
@@ -92,6 +98,7 @@ void Highlighter::add_comment_rule()
     QTextCharFormat comment_format;
     comment_format.setFont(QFont(m_font_family, m_font_size));
     comment_format.setForeground(Qt::darkGreen);
+    comment_format.setFontItalic(true);
 
     highlight_rule rule;
 
@@ -101,9 +108,6 @@ void Highlighter::add_comment_rule()
     rule.pattern = QRegularExpression("\\/\\/.*$");
     highlight_rules.append(rule);
 
-    // 多行注释
-    rule.pattern = QRegularExpression("\\/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*\\/");
-    highlight_rules.append(rule);
 }
 
 void Highlighter::add_multi_line_comment_rule(const QString &text)
@@ -118,6 +122,7 @@ void Highlighter::add_multi_line_comment_rule(const QString &text)
     QTextCharFormat multi_line_comment_format;
     multi_line_comment_format.setFont(QFont(m_font_family, m_font_size));
     multi_line_comment_format.setForeground(Qt::darkGreen);
+    multi_line_comment_format.setFontItalic(true);
 //    int start_index = comment_start_expression.match(text).capturedStart();  // 没有捕获到则返回 -1
     int start_index = 0;
     if (previousBlockState() != 1) {
@@ -162,4 +167,38 @@ void Highlighter::add_keyword_rule()
         }
         file.close();
     }
+}
+
+void Highlighter::add_classname_rule()
+{
+    highlight_rule rule;
+
+    QTextCharFormat classname_format;
+    classname_format.setFont(QFont(m_font_family, m_font_size));
+    classname_format.setForeground(QColor(150, 20, 100));
+    classname_format.setFontWeight(99);
+
+
+    rule.format = classname_format;
+
+    rule.pattern = QRegularExpression("\\b[A-Z]+\\w*");
+    highlight_rules.append(rule);
+}
+
+void Highlighter::add_funtion_rule()
+{
+    highlight_rule rule;
+
+    QTextCharFormat funtion_format;
+    funtion_format.setFont(QFont(m_font_family, m_font_size));
+    funtion_format.setForeground(Qt::darkYellow);
+
+
+    rule.format = funtion_format;
+
+    rule.pattern = QRegularExpression("\\w+\\(");
+    highlight_rules.append(rule);
+
+    rule.pattern = QRegularExpression("\\)");
+    highlight_rules.append(rule);
 }

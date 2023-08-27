@@ -80,6 +80,8 @@ private slots:
     void _about_triggered();
 
 
+    void on_tabWidget_tabCloseRequested(int index);
+
 signals:
 
 

@@ -2,6 +2,13 @@
 #include "ui_textedit.h"
 
 
+/*
+ * 已被弃用
+ *
+ */
+
+
+
 TextEdit::TextEdit(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TextEdit)
@@ -16,17 +23,29 @@ TextEdit::TextEdit(QWidget *parent) :
 
     connect(ui->textEdit, &QTextEdit::textChanged, this, &TextEdit::text_changed);
 
-    QFont font("Consolas", 13);
-    ui->textEdit->setFont(font);
-    ui->textBrowser->setFont(font);
+    m_font = QFont("Consolas", 13);
+    ui->textEdit->setFont(m_font);
+
+    QTextBlockFormat format;
+    format.setLineHeight(QFontMetrics(m_font).height() * 1.1, QTextBlockFormat::FixedHeight);
+    QTextCursor cursor = ui->textEdit->textCursor();
+    cursor.select(QTextCursor::Document);
+    cursor.mergeBlockFormat(format);
+
+    ui->textBrowser->setFont(m_font);
+//    cursor = ui->textBrowser->textCursor();
+//    cursor.select(QTextCursor::Document);
+//    cursor.mergeBlockFormat(format);
+
+
 
     connect(ui->textEdit->verticalScrollBar(), &QAbstractSlider::valueChanged, this, &TextEdit::text_edit_v_scroll_bar_value_changed);
 
     connect(ui->textBrowser->verticalScrollBar(), &QAbstractSlider::valueChanged, this, &TextEdit::textBrowser_v_scroll_bar_value_changed);
 
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &TextEdit::hitghlight_current_line);
 
-    Highlighter *m_highlighter = new Highlighter(ui->textEdit->document());
-
+    init_hightlight();
 
 }
 
@@ -83,7 +102,7 @@ void TextEdit::text_changed()     // 有问题   点击某一行时，会将改�
     }
 
 
-    ui->textBrowser->setMaximumWidth(25 + QString::number(line_count_of_textEdit).length() * 7);  // 设置左侧显示行号的宽度
+    ui->textBrowser->setMaximumWidth(25 + QString::number(line_count_of_textEdit).length() * 6);  // 设置左侧显示行号的宽度
     ui->textBrowser->setText(text);
 
 //    int line_count = ui->textEdit->document()->lineCount();
@@ -91,5 +110,34 @@ void TextEdit::text_changed()     // 有问题   点击某一行时，会将改�
 //        text += QString::number(i + 1) + "\n";    // 左侧显示行号
 //    }  // 效率低下
 //    ui->textBrowser->setMaximumWidth(25 + QString::number(line_count).length() * 7);  // 设置左侧显示行号的宽度
-//    ui->textBrowser->setText(text);
+    //    ui->textBrowser->setText(text);
+
+    QTextBlockFormat format;
+    format.setLineHeight(QFontMetrics(m_font).height() * 1.1, QTextBlockFormat::FixedHeight);
+//    format.setAlignment(Qt::AlignmentFlag::AlignRight);
+
+
+    QTextCursor cursor = ui->textBrowser->textCursor();
+    cursor.select(QTextCursor::Document);
+    cursor.mergeBlockFormat(format);
 }
+
+void TextEdit::init_hightlight()
+{
+    new Highlighter(ui->textEdit->document());
+}
+
+void TextEdit::hitghlight_current_line()
+{
+    QList<QTextEdit::ExtraSelection> extra_selections;
+
+    QTextEdit::ExtraSelection selection;
+    selection.format.setBackground(QColor(0, 100, 100, 20));
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = ui->textEdit->textCursor();
+
+    extra_selections.append(selection);
+
+    ui->textEdit->setExtraSelections(extra_selections);
+}
+

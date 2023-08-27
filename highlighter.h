@@ -8,7 +8,7 @@
 class Highlighter : public QSyntaxHighlighter
 {
 public:
-    explicit Highlighter(QTextDocument *parent = nullptr);
+    explicit Highlighter(QTextDocument *parent = nullptr, QString font_family = "Consolas", int font_size = 13);
 
 protected:
     virtual void highlightBlock(const QString &text);
@@ -26,6 +26,10 @@ private:
 
     void add_keyword_rule();
 
+    void add_classname_rule();
+
+    void add_funtion_rule();
+
 private:
     struct highlight_rule  // 高亮规则
     {
@@ -35,8 +39,9 @@ private:
 
     QVector<highlight_rule> highlight_rules;
 
-    QString m_font_family = "Consolas";
-    int m_font_size = 13;
+    QString m_font_family;
+    int m_font_size;
+
 };
 
 

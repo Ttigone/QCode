@@ -1,6 +1,12 @@
 #ifndef TEXTEDIT_H
 #define TEXTEDIT_H
 
+
+/*
+ * 已被弃用
+ *
+ */
+
 #include <QWidget>
 #include "highlighter.h"
 
@@ -28,6 +34,11 @@ private slots:
     void text_changed();
 private:
     Ui::TextEdit *ui;
+    QFont m_font;
+
+    void init_hightlight();
+
+    void hitghlight_current_line();
 };
 
 #endif // TEXTEDIT_H

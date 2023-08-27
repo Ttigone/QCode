@@ -3,7 +3,8 @@
 #include "qtextedit.h"
 #include "titleBar.h"
 #include "QSettings"
-#include "textedit.h"
+//#include "textedit.h"
+#include "codeedit.h"
 
 #include <qboxlayout.h>
 #include <QFileDialog>
@@ -54,10 +55,10 @@ qcode::qcode(QWidget *parent)
     pLayout->setSpacing(5);  // 与下一部件的间距
     pLayout->setContentsMargins(5, 0, 5, 5);  // left top right bottom 边缘间距像素
 
-    current_text_editor = new QTextEdit();
-    current_text_editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+//    current_text_editor = new QTextEdit();
+//    current_text_editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     pLayout->addWidget(ui->tabWidget);
-    current_text_editor->setStyleSheet("border: 2px solid red;");
+//    current_text_editor->setStyleSheet("border: 2px solid red;");
 
     // 将菜单栏的 新建文本文件信号关联到匹配的槽函数
     connect(pTitleBar, &titleBar::new_text_file_triggered, this, &qcode::_new_text_file_triggered);
@@ -258,8 +259,8 @@ void qcode::init_recent_menu()
 
 void qcode::_new_text_file_triggered()
 {
-    TextEdit *my_text_edit = new TextEdit(this);
-    ui->tabWidget->addTab(my_text_edit, "Untitled.txt");
+//    TextEdit *my_text_edit = new TextEdit(this);
+    ui->tabWidget->addTab(new CodeEdit(this), "Untitled.txt");
 //    current_file.clear();
 //    current_text_editor->setText("");
 //    init_recent_menu();
@@ -287,7 +288,17 @@ void qcode::_open_file_triggered()
     current_file = file_name;
     QTextStream in(&file);
     QString content_text = in.readAll();
-    current_text_editor->setText(content_text);
+
+
+    CodeEdit *code_editor = new CodeEdit(this);
+
+    code_editor->setPlainText(content_text);
+    ui->tabWidget->addTab(code_editor, current_file);
+
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
+
+//    current_text_editor->setText(content_text);
+
     file.close();
 
     save_history(current_file);
@@ -307,45 +318,38 @@ void qcode::_open_recent_triggered()
 
 void qcode::_save_triggered()
 {
-    if (current_file.isEmpty()) {
-        file_name = QFileDialog::getSaveFileName(this, "保存文件");  // 调用对话框的时候有一些 bug, 保存不能预先自己定义
-        current_file = file_name;
-    } else {
-        file_name = current_file;
+
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+
+    if (code_editor) {
+        if (code_editor->save_file()) {
+            QString file_name = code_editor->get_file_name();
+            ui->tabWidget->setTabText(ui->tabWidget->currentIndex(), file_name);
+            save_history(file_name);
+            init_recent_menu();
+        }
     }
-    QFile file(file_name);
-    if (!file.open(QIODevice::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, "警告", "无法保存文件: " + file.errorString());
-        return;
-    }
-    QTextStream out(&file);
-    QString content_text = current_text_editor->toPlainText();
 
-    out << content_text;
-    file.close();
 
-    save_history(current_file);
-
-    init_recent_menu();
 }
 
 void qcode::_save_as_triggered()
 {
-    file_name = QFileDialog::getSaveFileName(this, "另存文件");
-    QFile file(file_name);
-    if (!file.open(QIODevice::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, "警告", "无法保存文件: " + file.errorString());
-        return;
+
+
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+
+    if (code_editor) {
+        if (code_editor->save_as_file()) {
+            QString file_name = code_editor->get_file_name();
+            ui->tabWidget->setTabText(ui->tabWidget->currentIndex(), file_name);
+            save_history(file_name);
+            init_recent_menu();
+        }
     }
-    current_file = file_name;
-    QTextStream out(&file);
-    QString content_text = current_text_editor->toPlainText();
-    out << content_text;
-    file.close();
 
-    save_history(current_file);
 
-    init_recent_menu();
+
 }
 
 void qcode::_close_editor_triggered()
@@ -418,4 +422,11 @@ void qcode::_about_triggered()
     QMessageBox::about(this, "QCode", "乞丐版-vscode");
 }
 
+
+
+void qcode::on_tabWidget_tabCloseRequested(int index)
+{
+    delete ui->tabWidget->currentWidget();
+    ui->tabWidget->removeTab(index);
+}
 
