@@ -7,5 +7,6 @@
         <file>images/new_file.png</file>
         <file>images/opened_folder.png</file>
         <file>images/qc.png</file>
+        <file>images/qcexe.ico</file>
     </qresource>
 </RCC>

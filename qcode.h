@@ -12,6 +12,7 @@ class qcode : public QWidget
 {
     Q_OBJECT
 
+    friend class titleBar;
 public:
     qcode(QWidget *parent = nullptr);
     ~qcode();
@@ -27,6 +28,8 @@ public:
     void clear_history_record();
 
     void init_recent_menu();
+
+    int get_current_table_count();
 
 private slots:
 
@@ -52,7 +55,7 @@ private slots:
     void _close_window_triggered();    // 处理 关闭窗口
 
 
-    void _uodo_triggered();            // 处理 撤销
+    void _undo_triggered();            // 处理 撤销
 
     void _redo_triggered();            // 处理
 
@@ -90,8 +93,6 @@ private:
     Ui::qcode *ui;
 
     int m_nBorderWidth; //m_nBorder表示鼠标位于边框缩放范围的宽度
-
-    QTextEdit *current_text_editor;
 
     QString current_file;
 

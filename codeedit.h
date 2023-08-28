@@ -27,6 +27,8 @@ public:
     void set_file_name(QString file_name);
 
     QString get_file_name();
+
+    bool check_saved();
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
@@ -47,12 +49,16 @@ private slots:
 
     void update_line_number_area_width();
 
-signals:
+    void update_save_state();
+
 
 private:
     LineNumber *m_line_number_widget;
 
     QString m_file_name;
+
+    bool is_save = false;
+signals:
 };
 
 

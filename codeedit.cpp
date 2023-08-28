@@ -99,6 +99,7 @@ bool CodeEdit::save_file()
 
     file.close();
 
+    is_save = true;
     return true;
 }
 
@@ -116,6 +117,7 @@ bool CodeEdit::save_as_file()
     out << toPlainText();
     file.close();
 
+    is_save = true;
     return true;
 }
 
@@ -127,6 +129,11 @@ void CodeEdit::set_file_name(QString file_name)
 QString CodeEdit::get_file_name()
 {
     return m_file_name;
+}
+
+bool CodeEdit::check_saved()
+{
+    return is_save;
 }
 
 void CodeEdit::resizeEvent(QResizeEvent *event)
@@ -159,6 +166,8 @@ void CodeEdit::init_connection()
     connect(this, &QPlainTextEdit::updateRequest, this, &CodeEdit::update_line_number_area);
 
     connect(this, &QPlainTextEdit::blockCountChanged, this, &CodeEdit::update_line_number_area_width);
+
+    connect(this, &QPlainTextEdit::textChanged, this, &CodeEdit::update_save_state);
 }
 
 void CodeEdit::hitghlight_current_line()
@@ -186,4 +195,9 @@ void CodeEdit::update_line_number_area(const QRect &rect, int dy)
 void CodeEdit::update_line_number_area_width()
 {
     setViewportMargins(get_line_number_area_width(), 0, 0, 0);
+}
+
+void CodeEdit::update_save_state()
+{
+    is_save = false;
 }

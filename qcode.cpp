@@ -40,6 +40,7 @@ qcode::qcode(QWidget *parent)
 
 
     titleBar *pTitleBar = new titleBar(this);
+//    qDebug() << this;
 //    pTitleBar->setFixedHeight(23);
     installEventFilter(pTitleBar);
 
@@ -66,7 +67,7 @@ qcode::qcode(QWidget *parent)
     connect(pTitleBar, &titleBar::save_triggered, this, &qcode::_save_triggered);
     connect(pTitleBar, &titleBar::save_as_triggered, this, &qcode::_save_as_triggered);
 
-    connect(pTitleBar, &titleBar::undo_triggered, this, &qcode::_uodo_triggered);
+    connect(pTitleBar, &titleBar::undo_triggered, this, &qcode::_undo_triggered);
     connect(pTitleBar, &titleBar::redo_triggered, this, &qcode::_redo_triggered);
     connect(pTitleBar, &titleBar::cut_triggered, this, &qcode::_cut_triggered);
     connect(pTitleBar, &titleBar::copy_triggered, this, &qcode::_copy_triggered);
@@ -209,7 +210,12 @@ void qcode::open_recent_file()
     current_file = file_name;
     QTextStream in(&file);
     QString content_text = in.readAll();
-    current_text_editor->setText(content_text);
+
+    CodeEdit *code_editor = new CodeEdit(this);
+    code_editor->setPlainText(content_text);
+    ui->tabWidget->addTab(code_editor, current_file);
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
+
     file.close();
 
     save_history(current_file);
@@ -255,6 +261,11 @@ void qcode::init_recent_menu()
         recent->addSeparator();
         recent->addAction("Clear Recently Opened", this, &qcode::clear_history_record);
     }
+}
+
+int qcode::get_current_table_count()
+{
+    return ui->tabWidget->count();
 }
 
 void qcode::_new_text_file_triggered()
@@ -362,29 +373,44 @@ void qcode::_close_window_triggered()
 
 }
 
-void qcode::_uodo_triggered()
+void qcode::_undo_triggered()
 {
-    current_text_editor->undo();
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+    if (code_editor) {
+        code_editor->undo();
+    }
 }
 
 void qcode::_redo_triggered()
 {
-    current_text_editor->redo();
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+    if (code_editor) {
+        code_editor->redo();
+    }
 }
 
 void qcode::_cut_triggered()
 {
-    current_text_editor->cut();
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+    if (code_editor) {
+        code_editor->cut();
+    }
 }
 
 void qcode::_copy_triggered()
 {
-    current_text_editor->copy();
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+    if (code_editor) {
+        code_editor->copy();
+    }
 }
 
 void qcode::_paste_triggered()
 {
-    current_text_editor->paste();
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+    if (code_editor) {
+        code_editor->paste();
+    }
 }
 
 void qcode::_find_triggered()
@@ -426,7 +452,25 @@ void qcode::_about_triggered()
 
 void qcode::on_tabWidget_tabCloseRequested(int index)
 {
-    delete ui->tabWidget->currentWidget();
+    CodeEdit *code_editor = (CodeEdit *)ui->tabWidget->currentWidget();
+    if (!code_editor->check_saved()) {
+        QMessageBox::StandardButton btn = QMessageBox::question(this, "警告", "文件未保存, 是否保存文件", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+
+        if (btn == QMessageBox::Yes) {
+            if (code_editor->save_file()) {
+                QString file_name = code_editor->get_file_name();
+                save_history(file_name);
+                init_recent_menu();
+            }
+            return;
+        } else if (btn == QMessageBox::Cancel) {
+            return;
+        }
+    }
+//    delete ui->tabWidget->currentWidget();
     ui->tabWidget->removeTab(index);
+    delete code_editor;
 }
+
 

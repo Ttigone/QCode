@@ -19,6 +19,7 @@ set(PROJECT_SOURCES
         qcode.ui
 )
 
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(QCode
         MANUAL_FINALIZATION
@@ -75,3 +76,10 @@ install(TARGETS QCode
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(QCode)
 endif()
+
+#set_target_properties(QCode PROPERTIES
+#    WIN32_EXECUTABLE TRUE
+#    MACOSX_BUNDLE TRUE
+#)
+#set_property(TARGET QCode PROPERTY WIN32_EXECUTABLE TRUE)
+#

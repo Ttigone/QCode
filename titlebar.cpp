@@ -5,8 +5,10 @@
 #include <QMouseEvent>
 #include <QApplication>
 #include <QPixmap>
+#include <qmessagebox.h>
 
 #include "titleBar.h"
+#include "qcode.h"
 
 //调用WIN API需要用到的头文件与库
 #ifdef Q_OS_WIN
@@ -15,6 +17,7 @@
 #endif
 
 
+class qcode;
 
 titleBar::titleBar(QWidget *parent)
     : QWidget(parent)
@@ -379,6 +382,16 @@ void titleBar::onClicked()
         }
         else if (pButton == m_pCloseButton)
         {
+            qcode *p = (qcode *)this->parentWidget();   // 拿到父对象当前页面的数量
+
+            if (p->get_current_table_count() > 0) {
+                QMessageBox::StandardButton btn = QMessageBox::question(this, "警告", "有未保存的文件，确定要关闭吗?", QMessageBox::Yes | QMessageBox::No);
+                if (btn == QMessageBox::Yes) {
+                    pWindow->close();
+                } else {
+                    return;
+                }
+            }
             pWindow->close(); //窗口关闭
         }
     }
