@@ -93,9 +93,7 @@ bool CodeEdit::save_file()
     }
     QTextStream out(&file);
 
-
     out << toPlainText();
-
 
     file.close();
 
@@ -139,14 +137,12 @@ bool CodeEdit::check_saved()
 void CodeEdit::resizeEvent(QResizeEvent *event)
 {
     QPlainTextEdit::resizeEvent(event);
-//    m_line_number_widget->setGeometry(0, 0, 25, contentsRect().height());
     m_line_number_widget->setGeometry(0, 0, get_line_number_area_width(), contentsRect().height());
 }
 
 void CodeEdit::init_font()
 {
     this->setFont(QFont("Consolas", 13));
-
 }
 
 void CodeEdit::init_highlighter()

@@ -18,7 +18,7 @@
 #endif
 
 
-QSettings *mSettings;
+QSettings *mSettings;    // 配置文件
 
 QList<QString> get_history();
 
@@ -27,59 +27,21 @@ qcode::qcode(QWidget *parent)
     , ui(new Ui::qcode)
 {
     ui->setupUi(this);
-    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    resize(1200, 800);
 
-//    setAttribute(Qt::WA_StyledBackground);
-//    setStyleSheet("background-color: rgb(17, 17, 17);");  // 整个窗口的颜色都改变了
-
-
+    // 配置文件
     if (mSettings == nullptr) {
         mSettings = new QSettings("setting.ini", QSettings::IniFormat);
     }
 
+    // 初始化界面
+    init_widget();
+    // 初始化信号槽连接
+    init_connection();
 
-    titleBar *pTitleBar = new titleBar(this);
-//    qDebug() << this;
-//    pTitleBar->setFixedHeight(23);
-    installEventFilter(pTitleBar);
-
-//    setWindowTitle("Custom Window");
-    QIcon w_icon(":/images/qc.png");
-    setWindowIcon(w_icon);
-
-    get_history();
-
-    QVBoxLayout *pLayout = new QVBoxLayout(this);
-    pLayout->addWidget(pTitleBar);
-//    pLayout->addStretch();
-    pLayout->setSpacing(5);  // 与下一部件的间距
-    pLayout->setContentsMargins(5, 0, 5, 5);  // left top right bottom 边缘间距像素
-
-//    current_text_editor = new QTextEdit();
-//    current_text_editor->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    pLayout->addWidget(ui->tabWidget);
-//    current_text_editor->setStyleSheet("border: 2px solid red;");
-
-    // 将菜单栏的 新建文本文件信号关联到匹配的槽函数
-    connect(pTitleBar, &titleBar::new_text_file_triggered, this, &qcode::_new_text_file_triggered);
-    connect(pTitleBar, &titleBar::open_file_triggered, this, &qcode::_open_file_triggered);
-    connect(pTitleBar, &titleBar::save_triggered, this, &qcode::_save_triggered);
-    connect(pTitleBar, &titleBar::save_as_triggered, this, &qcode::_save_as_triggered);
-
-    connect(pTitleBar, &titleBar::undo_triggered, this, &qcode::_undo_triggered);
-    connect(pTitleBar, &titleBar::redo_triggered, this, &qcode::_redo_triggered);
-    connect(pTitleBar, &titleBar::cut_triggered, this, &qcode::_cut_triggered);
-    connect(pTitleBar, &titleBar::copy_triggered, this, &qcode::_copy_triggered);
-    connect(pTitleBar, &titleBar::paste_triggered, this, &qcode::_paste_triggered);
-
-
-    connect(pTitleBar, &titleBar::about_triggered, this, &qcode::_about_triggered);
-
-    setLayout(pLayout);
-    m_nBorderWidth = 3;
-
+    // 初始化最近菜单
     init_recent_menu();
+
+
 }
 
 qcode::~qcode()
@@ -145,15 +107,68 @@ bool qcode::nativeEvent(const QByteArray &eventType, void *message, qintptr *res
     return QWidget::nativeEvent(eventType, message, result);
 }
 
+void qcode::init_widget()
+{
+    // 设置无标题框
+    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+
+    // 设置初始大小
+    resize(1200, 800);
+
+    setAttribute(Qt::WA_StyledBackground);
+
+    // 设置标题图标
+    QIcon w_icon(":/images/qc.png");
+    setWindowIcon(w_icon);
+
+    // 为主界面窗口设置垂直布局
+    QVBoxLayout *pLayout = new QVBoxLayout(this);
+
+    // 自定义标题框
+    m_title_bar = new titleBar(this);
+    // 安装过滤器
+    installEventFilter(m_title_bar);
+
+    // 添加第一个 widget
+    pLayout->addWidget(m_title_bar);
+
+    // 设置间隙
+    pLayout->setSpacing(5);  // 与下一部件的间距
+
+    pLayout->setContentsMargins(5, 0, 5, 5);  // left top right bottom 边缘间距像素
+
+    // 添加第二个 widget
+    pLayout->addWidget(ui->tabWidget);
+
+    // 应用界面布局
+    setLayout(pLayout);
+
+    // 可拖拽的边距
+    m_nBorderWidth = 3;
+}
+
+void qcode::init_connection()
+{
+    // 将菜单栏的 新建文本文件信号关联到匹配的槽函数
+    connect(m_title_bar, &titleBar::new_text_file_triggered, this, &qcode::_new_text_file_triggered);
+    connect(m_title_bar, &titleBar::open_file_triggered, this, &qcode::_open_file_triggered);
+    connect(m_title_bar, &titleBar::save_triggered, this, &qcode::_save_triggered);
+    connect(m_title_bar, &titleBar::save_as_triggered, this, &qcode::_save_as_triggered);
+
+    connect(m_title_bar, &titleBar::undo_triggered, this, &qcode::_undo_triggered);
+    connect(m_title_bar, &titleBar::redo_triggered, this, &qcode::_redo_triggered);
+    connect(m_title_bar, &titleBar::cut_triggered, this, &qcode::_cut_triggered);
+    connect(m_title_bar, &titleBar::copy_triggered, this, &qcode::_copy_triggered);
+    connect(m_title_bar, &titleBar::paste_triggered, this, &qcode::_paste_triggered);
+
+    connect(m_title_bar, &titleBar::about_triggered, this, &qcode::_about_triggered);
+}
+
 void qcode::save_history(QString path)
 {
-
     // 读取历史
     QList<QString> lists = get_history();
     lists.append(path);
-
-//    QSet<QString> set(lists.cbegin(), lists.cend());
-//    QList<QString> new_lists = QList<QString>(set.cbegin(), set.cend());
 
     foreach (QString str, lists) {
         if (str == path) {
@@ -161,9 +176,6 @@ void qcode::save_history(QString path)
         }
     }
     lists.append(path);
-
-//    int size = mSettings->beginReadArray("history");
-//    mSettings->endArray();
 
     // 打开开始写入
     mSettings->beginWriteArray("history");
@@ -190,7 +202,6 @@ QList<QString> qcode::get_history()
         mSettings->setArrayIndex(i);
         QString path = mSettings->value("path").toString();
         lists.append(path);
-//        qDebug() << path;
     }
     mSettings->endArray();
 
@@ -207,18 +218,17 @@ void qcode::open_recent_file()
         QMessageBox::warning(this, "警告", "无法打开此文件: " + file.errorString());
         return;
     }
-    current_file = file_name;
     QTextStream in(&file);
     QString content_text = in.readAll();
 
     CodeEdit *code_editor = new CodeEdit(this);
     code_editor->setPlainText(content_text);
-    ui->tabWidget->addTab(code_editor, current_file);
+    ui->tabWidget->addTab(code_editor, file_name);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
 
     file.close();
 
-    save_history(current_file);
+    save_history(file_name);
 
     init_recent_menu();
 }
@@ -233,6 +243,9 @@ void qcode::init_recent_menu()
 {
     QMenu *recent = this->findChild<QMenu *>("recent");
 
+    qDebug() << recent;  // 能找到
+
+    // 去重
     QList<QObject *> chlists = recent->children().toList();
     QSet<QObject *> set_lists(chlists.cbegin(), chlists.cend());
 
@@ -241,20 +254,13 @@ void qcode::init_recent_menu()
         recent->removeAction(action);
     }
 
+    // BUG
     QList<QString> lists = get_history();          // 获取曾经未删除历史记录
 
-//    for (int i = 0; i < lists.size(); ++i) {
-//        recent->addAction(lists.at(lists.size() - i - 1), this, &qcode::open_recent_file);  // 添加新记录
-//    }
 
     for (int i = lists.size() - 1; i >= 0; --i) {
         recent->addAction(lists.at(i), this, &qcode::open_recent_file);  // 添加新记录
     }
-
-
-//    foreach (QString str, lists) {
-//        recent->addAction(str, this, &qcode::open_recent_file);  // 添加新记录
-//    }
 
 
     if (lists.size() > 0) {
@@ -270,12 +276,7 @@ int qcode::get_current_table_count()
 
 void qcode::_new_text_file_triggered()
 {
-//    TextEdit *my_text_edit = new TextEdit(this);
     ui->tabWidget->addTab(new CodeEdit(this), "Untitled.txt");
-//    current_file.clear();
-//    current_text_editor->setText("");
-//    init_recent_menu();
-//    current_file = "Untitled.txt";
 }
 
 void qcode::_new_file_triggered()
@@ -296,7 +297,6 @@ void qcode::_open_file_triggered()
         QMessageBox::warning(this, "警告", "无法打开此文件: " + file.errorString());
         return;
     }
-    current_file = file_name;
     QTextStream in(&file);
     QString content_text = in.readAll();
 
@@ -304,15 +304,14 @@ void qcode::_open_file_triggered()
     CodeEdit *code_editor = new CodeEdit(this);
 
     code_editor->setPlainText(content_text);
-    ui->tabWidget->addTab(code_editor, current_file);
+    ui->tabWidget->addTab(code_editor, file_name);
 
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
 
-//    current_text_editor->setText(content_text);
 
     file.close();
 
-    save_history(current_file);
+    save_history(file_name);
 
     init_recent_menu();
 }
@@ -447,8 +446,6 @@ void qcode::_about_triggered()
 {
     QMessageBox::about(this, "QCode", "乞丐版-vscode");
 }
-
-
 
 void qcode::on_tabWidget_tabCloseRequested(int index)
 {

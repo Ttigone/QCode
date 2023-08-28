@@ -1,6 +1,3 @@
-#include <QLabel>
-#include <QPushButton>
-#include <QHBoxLayout>
 #include <QEvent>
 #include <QMouseEvent>
 #include <QApplication>
@@ -26,12 +23,52 @@ titleBar::titleBar(QWidget *parent)
 
     setAttribute(Qt::WA_StyledBackground);
 
-    m_pIconLabel = new QLabel(this);
-    m_pTitleLabel = new QLabel(this);
+    // 设置菜单栏左侧
+    init_all_action();
 
-    m_menu = new QMenuBar(this);   // 菜单栏
+    // 设置整个标题栏窗口
+    init_widget();
 
+    // 设置信号槽连接
+    init_connection();
+
+    // 设置快捷键
+    init_shortcut_key();
+
+
+//    m_hover_timer = new QTimer(this);
+//    connect(m_menu, &QMenuBar::hovered, this, &titleBar::onMenuHovered);   // 移动到 menubar 的时候按一定事件显示对应的 QMenu
+//    connect(m_hover_timer, &QTimer::timeout, this, &titleBar::showMenu);
+//    m_hover_timer->setSingleShot(true);
+
+
+}
+
+titleBar::~titleBar()
+{
+
+}
+
+void titleBar::init_icon()
+{
+    m_pIconLabel = new QLabel(this);    // 有 bug
+//    m_pTitleLabel = new QLabel(this);
+//    m_pTitleLabel->setObjectName("whiteLabel");
+    //初始化图标Label
+    m_pIconLabel->setFixedSize(20, 20);
+    m_pIconLabel->setScaledContents(true);
+    QPixmap pixmap(":/images/qc.png");
+    m_pIconLabel->setPixmap(pixmap);
+
+    // 设置文本
+//    m_pTitleLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+}
+
+void titleBar::init_file()
+{
     m_file = new QAction("File", this);
+
+    m_file->setObjectName("File");
     // 创建专属菜单
     m_file_menu = new QMenu(this);
     // 设置专属菜单
@@ -65,10 +102,11 @@ titleBar::titleBar(QWidget *parent)
 //    m_clear_all_recent = new QAction("clear history", this);
 //    m_clear_all_recent->setObjectName("clear_action");
 
-    QAction *action = new QAction(this);
+//    QAction *action = new QAction(this);
 
 
     m_open_recent_menu->setObjectName("recent");  // 设置对象名， 让父亲通过 findchild 寻找到
+
 
 //    m_open_recent_menu->addAction(m_clear_all_recent);
     m_open_recent->setMenu(m_open_recent_menu);
@@ -97,8 +135,13 @@ titleBar::titleBar(QWidget *parent)
     // 添加 第四部分功能 QAction
     m_file_menu->addAction(m_close_editor);
     m_file_menu->addAction(m_close_window);
+}
 
+void titleBar::init_edit()
+{
     m_edit = new QAction("Edit", this);
+    m_edit->setObjectName("Edit");
+
     m_edit_menu = new QMenu(this);
     m_edit->setMenu(m_edit_menu);
     m_undo = new QAction("Uodo", this);
@@ -117,23 +160,36 @@ titleBar::titleBar(QWidget *parent)
     m_replace = new QAction("Replace", this);
     m_edit_menu->addAction(m_find);
     m_edit_menu->addAction(m_replace);
+}
 
-
-
-
+void titleBar::init_selection()
+{
     m_selection = new QAction("Selection", this);
+    m_selection->setObjectName("Selection");
+
     m_selection_menu = new QMenu(this);
     m_selection->setMenu(m_selection_menu);
     m_select_all = new QAction("Select All");
     m_selection_menu->addAction(m_select_all);
+}
+
+void titleBar::init_view()
+{
 
     m_view = new QAction("View", this);
+    m_view->setObjectName("View");
+
     m_view_menu = new QMenu(this);
     m_view->setMenu(m_view_menu);
     m_command_palette = new QAction("Command Palette...", this);
     m_view_menu->addAction(m_command_palette);
+}
 
+void titleBar::init_help()
+{
     m_help = new QAction("Help", this);
+    m_help->setObjectName("Help");
+
     m_help_menu = new QMenu(this);
     m_help->setMenu(m_help_menu);
     m_welcome = new QAction("Welcome", this);
@@ -144,33 +200,13 @@ titleBar::titleBar(QWidget *parent)
     m_about = new QAction("About", this);
     m_help_menu->addAction(m_about);
 
+}
+
+void titleBar::init_btn()
+{
     m_pMinimizeButton = new QPushButton(this);
     m_pMaximizeButton = new QPushButton(this);
     m_pCloseButton = new QPushButton(this);
-
-    //初始化图标Label
-    m_pIconLabel->setFixedSize(20, 20);
-    m_pIconLabel->setScaledContents(true);
-    QPixmap pixmap(":/images/qc.png");
-    m_pIconLabel->setPixmap(pixmap);
-
-    // 设置文本
-    m_pTitleLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-    // 设置菜单栏部件的名称
-    m_file->setObjectName("File");
-    m_edit->setObjectName("Edit");
-    m_selection->setObjectName("Selection");
-    m_view->setObjectName("View");
-    m_help->setObjectName("Help");
-
-    // 为菜单栏添加 QAction 控件
-    m_menu->addAction(m_file);
-    m_menu->addAction(m_edit);
-    m_menu->addAction(m_selection);
-    m_menu->addAction(m_view);
-    m_menu->addAction(m_help);
-
 
     //设置按钮的固定大小、图片、取消边框
     m_pMinimizeButton->setIconSize(QSize(30,22));
@@ -186,66 +222,91 @@ titleBar::titleBar(QWidget *parent)
     m_pCloseButton->setFlat(true);
 
     //设置窗口部件的名称
-    m_pTitleLabel->setObjectName("whiteLabel");
     m_pMinimizeButton->setObjectName("minimizeButton");
     m_pMaximizeButton->setObjectName("maximizeButton");
     m_pCloseButton->setObjectName("closeButton");
-
 
     //给按钮设置静态tooltip，当鼠标移上去时显示tooltip
     m_pMinimizeButton->setToolTip("Minimize");
     m_pMaximizeButton->setToolTip("Maximize");
     m_pCloseButton->setToolTip("Close");
+}
 
+void titleBar::init_menu()
+{
+    m_menu = new QMenuBar(this);   // 菜单栏
+    // 为菜单栏添加 QAction 控件
+    m_menu->addAction(m_file);
+    m_menu->addAction(m_edit);
+    m_menu->addAction(m_selection);
+    m_menu->addAction(m_view);
+    m_menu->addAction(m_help);
 
-//    m_menu->setFixedHeight(30);
     m_menu->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+}
 
+void titleBar::init_widget()
+{
     //标题栏布局
-    QHBoxLayout *pLayout = new QHBoxLayout(this);
-    pLayout->addWidget(m_pIconLabel);
-    pLayout->setSpacing(5);             // 间隙
-//    pLayout->addWidget(m_pTitleLabel);
+    m_layout = new QHBoxLayout(this);
+    m_layout->addWidget(m_pIconLabel);
+    m_layout->setSpacing(5);             // 间隙
 
-    pLayout->setSpacing(5);             // 间隙
+    m_layout->setSpacing(5);             // 间隙
 
-    pLayout->addWidget(m_menu);         // 添加菜单栏
+    m_layout->addWidget(m_menu);         // 添加菜单栏
 
-//    pLayout->setSpacing(5);             // 间隙
+    m_layout->addStretch(1);             // 增加一个弹簧
 
-    pLayout->addStretch(1);             // 增加一个弹簧
+    m_layout->addWidget(m_pMinimizeButton);
+    m_layout->addWidget(m_pMaximizeButton);
+    m_layout->addWidget(m_pCloseButton);
+    m_layout->setSpacing(0);
+    m_layout->setContentsMargins(5, 0, 5, 0);
 
-    pLayout->addWidget(m_pMinimizeButton);
-    pLayout->addWidget(m_pMaximizeButton);
-    pLayout->addWidget(m_pCloseButton);
-    pLayout->setSpacing(0);
-    pLayout->setContentsMargins(5, 0, 5, 0);
+    this->setLayout(m_layout);
+}
 
-    this->setLayout(pLayout);
+void titleBar::init_all_action()
+{
+    // 设置图标
+    init_icon();
 
+    // 设置文件菜单
+    init_file();
 
+    // 设置编辑菜单
+    init_edit();
+
+    // 设置选择菜单
+    init_selection();
+
+    // 设置视图菜单
+    init_view();
+
+    // 设置帮助菜单
+    init_help();
+
+    // 设置按钮
+    init_btn();
+
+    // 设置菜单栏
+    init_menu();
+}
+
+void titleBar::init_connection()
+{
     //连接三个按钮的信号槽
     connect(m_pMinimizeButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(m_pMaximizeButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(m_pCloseButton, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
 
-    m_hover_timer = new QTimer(this);
-
-//    connect(m_menu, &QMenuBar::hovered, this, &titleBar::onMenuHovered);   // 移动到 menubar 的时候按一定事件显示对应的 QMenu
-
-    connect(m_hover_timer, &QTimer::timeout, this, &titleBar::showMenu);
-    m_hover_timer->setSingleShot(true);
-
-
     // BUG 连续点击时会导致程序崩溃  // 正常也会
-    connect(m_file_menu, &QMenu::aboutToShow, m_hover_timer, &QTimer::stop);  // 解决问题？
-    connect(m_edit_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
-    connect(m_selection_menu, &QMenu::aboutToShow, m_hover_timer, &QTimer::stop);
-    connect(m_view_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
-    connect(m_help_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
-
-    // 绑定快捷键
-    m_save->setShortcut(QKeySequence(tr("Ctrl+s")));
+//    connect(m_file_menu, &QMenu::aboutToShow, m_hover_timer, &QTimer::stop);  // 解决问题？
+//    connect(m_edit_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
+//    connect(m_selection_menu, &QMenu::aboutToShow, m_hover_timer, &QTimer::stop);
+//    connect(m_view_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
+//    connect(m_help_menu, &QMenu::aboutToHide, m_hover_timer, &QTimer::stop);
 
 
     connect(m_new_text_file, &QAction::triggered, this, &titleBar::new_text_file_triggered);
@@ -274,22 +335,12 @@ titleBar::titleBar(QWidget *parent)
     connect(m_welcome, &QAction::triggered, this, &titleBar::welcome_triggered);
     connect(m_show_all_commands, &QAction::triggered, this, &titleBar::show_all_commands_triggered);
     connect(m_about, &QAction::triggered, this, &titleBar::about_triggered);
-
-
-
-
-
-
-
-
-
-
-
 }
 
-titleBar::~titleBar()
+void titleBar::init_shortcut_key()
 {
-
+    // 绑定快捷键
+    m_save->setShortcut(QKeySequence(tr("Ctrl+s")));
 }
 
 
@@ -397,18 +448,18 @@ void titleBar::onClicked()
     }
 }
 
-void titleBar::onMenuHovered(QAction *action)
-{
-    m_current_hovered_action = action;
-    m_hover_timer->start(500);               // 延迟 500 毫秒
-}
+//void titleBar::onMenuHovered(QAction *action)
+//{
+//    m_current_hovered_action = action;
+//    m_hover_timer->start(500);               // 延迟 500 毫秒
+//}
 
-void titleBar::showMenu()
-{
-    if (m_current_hovered_action && !m_hover_timer->isActive()) {
-        m_current_hovered_action->menu()->popup(QCursor::pos());
-    }
-}
+//void titleBar::showMenu()
+//{
+//    if (m_current_hovered_action && !m_hover_timer->isActive()) {
+//        m_current_hovered_action->menu()->popup(QCursor::pos());
+//    }
+//}
 
 
 
