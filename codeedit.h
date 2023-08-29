@@ -72,10 +72,6 @@ public:
         m_code_editor = editor;
     }
 
-//    ~LineNumber() {
-//    delete m_code_editor;
-//    }
-//}
 signals:
 
 protected:

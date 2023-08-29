@@ -8,7 +8,17 @@
 CodeEdit::CodeEdit(QWidget *parent)
     : QPlainTextEdit{parent}
 {
+
     m_line_number_widget = new LineNumber(this);
+
+
+//    m_line_number_widget->setAttribute(Qt::WA_StyledBackground);
+
+
+    // 不换行
+//    setLineWrapMode(QPlainTextEdit::NoWrap);
+
+
     init_font();
 
     init_highlighter();
@@ -33,7 +43,9 @@ CodeEdit::~CodeEdit() noexcept
 void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(m_line_number_widget);
-    painter.fillRect(event->rect(), QColor(100, 100, 100, 20));
+
+    // 绘制序列框背景色                                             最后一个值是透明度
+    painter.fillRect(event->rect(), QColor(13, 13, 13 , 200));
 
     QTextBlock block = firstVisibleBlock();
 
@@ -47,9 +59,16 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
     int bottom = top + (int) blockBoundingRect(block).height();
 
     while (block.isValid() && top <= event->rect().bottom()) {
-        painter.setPen(cursor_top == top ? Qt::black : Qt::gray);
-//    painter.drawText(event->rect(), Qt::AlignLeft, QString::number(block_number + 1));
-        painter.drawText(0, top, get_line_number_area_width() - 3, bottom - top, Qt::AlignLeft, QString::number(block_number + 1));
+        // 绘制数字
+        if (cursor_top == top) {   // 位于当前行的绘制
+//            painter.setPen(QColor(204, 204, 204, 240));   // 文字颜色
+            painter.setPen(QColor(204, 204, 204));   // 文字颜色
+            painter.drawText(0, top, get_line_number_area_width() - 3, bottom - top, Qt::AlignCenter, QString::number(block_number + 1));
+        } else {  // 非当前行的绘制
+//            painter.setPen(QColor(100, 100, 100));
+            painter.setPen(QColor(100, 100, 100));
+            painter.drawText(0, top, get_line_number_area_width() - 3, bottom - top, Qt::AlignRight, QString::number(block_number + 1));
+        }
 
         block = block.next();
 
@@ -152,7 +171,7 @@ void CodeEdit::init_highlighter()
 
 int CodeEdit::get_line_number_area_width()
 {
-    return 8 + QString::number(blockCount()).length() * fontMetrics().horizontalAdvance(QChar('0'));
+    return 16 + QString::number(blockCount()).length() * fontMetrics().horizontalAdvance(QChar('0'));
 }
 
 void CodeEdit::init_connection()
@@ -177,6 +196,8 @@ void CodeEdit::hitghlight_current_line()
 
     extra_selections.append(selection);
     this->setExtraSelections(extra_selections);
+
+
 }
 
 void CodeEdit::update_line_number_area(const QRect &rect, int dy)

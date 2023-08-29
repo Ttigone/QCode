@@ -28,6 +28,9 @@ qcode::qcode(QWidget *parent)
 {
     ui->setupUi(this);
 
+
+
+
     // 配置文件
     if (mSettings == nullptr) {
         mSettings = new QSettings("setting.ini", QSettings::IniFormat);
@@ -40,6 +43,8 @@ qcode::qcode(QWidget *parent)
 
     // 初始化最近菜单
     init_recent_menu();
+
+
 
 
 }
@@ -151,7 +156,10 @@ void qcode::init_connection()
 {
     // 将菜单栏的 新建文本文件信号关联到匹配的槽函数
     connect(m_title_bar, &titleBar::new_text_file_triggered, this, &qcode::_new_text_file_triggered);
+    connect(m_title_bar, &titleBar::new_window_triggered, this, &qcode::_new_window_triggered);
+
     connect(m_title_bar, &titleBar::open_file_triggered, this, &qcode::_open_file_triggered);
+
     connect(m_title_bar, &titleBar::save_triggered, this, &qcode::_save_triggered);
     connect(m_title_bar, &titleBar::save_as_triggered, this, &qcode::_save_as_triggered);
 
@@ -286,7 +294,8 @@ void qcode::_new_file_triggered()
 
 void qcode::_new_window_triggered()
 {
-
+    qcode *new_window = new qcode();
+    new_window->show();
 }
 
 void qcode::_open_file_triggered()
@@ -317,11 +326,6 @@ void qcode::_open_file_triggered()
 }
 
 void qcode::_open_folder_triggered()
-{
-
-}
-
-void qcode::_open_recent_triggered()
 {
 
 }

@@ -2,6 +2,7 @@
 #define TITLEBAR_H
 
 #include <QKeySequence>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
 #include <QPushButton>
@@ -15,6 +16,29 @@ public:
     explicit titleBar(QWidget *parent = nullptr);
     ~titleBar();
 
+    void init_icon();
+
+    void init_file();
+
+    void init_edit();
+
+    void init_selection();
+
+    void init_view();
+
+    void init_help();
+
+    void init_btn();
+
+    void init_menu();
+
+    void init_widget();
+
+    void init_all_action();
+
+    void init_connection();
+
+    void init_shortcut_key();
 protected:
 
     // 双击标题栏进行界面的最大化/还原
@@ -26,80 +50,61 @@ protected:
     // 设置界面标题与图标
     virtual bool eventFilter(QObject *obj, QEvent *event);
 
-//    void closeEvent(QCloseEvent *event);
 
 private slots:
 
     // 进行最小化、最大化/还原、关闭操作
     void onClicked();
 
-    void onMenuHovered(QAction *action);
+//    void onMenuHovered(QAction *action);
 
-    void showMenu();
-
-private slots:
+//    void showMenu();
 
 signals:
-
-
-
+    // 新建文本文件信号
     void new_text_file_triggered();
-
+    // 新建文件信号
     void new_file_triggered();
-
+    // 新建窗口信号
     void new_window_triggered();
-
+    // 打开文件信号
     void open_file_triggered();
-
+    // 打开文件夹信号
     void open_folder_triggered();
-
+    // 打开最近文件信号
     void open_recent_triggered();
-
+    // 保存信号
     void save_triggered();
-
+    // 另存为信号
     void save_as_triggered();
-
+    // 关闭编辑器信号
     void close_editor_triggered();
-
+    // 关闭窗口信号
     void close_window_triggered();
-
-
-
+    // 撤销信号
     void undo_triggered();
-
+    // 重做信号
     void redo_triggered();
-
+    // 剪切信号
     void cut_triggered();
-
+    // 复制信号
     void copy_triggered();
-
+    // 黏贴信号
     void paste_triggered();
-
+    // 查找信号
     void find_triggered();
-
+    // 替换信号
     void replace_triggered();
-
-
-
-
+    // 全选信号
     void select_all_triggered();
-
-
-
-
+    // 命令面板信号
     void command_palette_triggered();
-
-
-
-
+    // 欢迎界面信号
     void welcome_triggered();
-
+    // 展示全部指令信号
     void show_all_commands_triggered();
-
+    // 关于界面信号
     void about_triggered();
-
-    // 次级按钮的触发信号
-
 
 private:
 
@@ -175,12 +180,12 @@ private:
     QPushButton *m_pMaximizeButton; //最大化/还原按钮
     QPushButton *m_pCloseButton; //关闭按钮
 
-
 private:
-    QTimer *m_hover_timer;
-    QAction *m_current_hovered_action = nullptr;
+//    QTimer *m_hover_timer;
+//    QAction *m_current_hovered_action = nullptr;
 
-private:
+    QHBoxLayout *m_layout;
+
 
 
 };

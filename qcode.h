@@ -62,8 +62,6 @@ private slots:
 
     void _open_folder_triggered();     // 处理 打开文件夹
 
-    void _open_recent_triggered();     // 处理 打开最近文件
-
     void _save_triggered();            // 处理 保存文件
 
     void _save_as_triggered();         // 处理 另存为文件
